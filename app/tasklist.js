@@ -1,7 +1,7 @@
 /**
  * Created by danli on 2/26/2017.
  */
-Tasks = new Mongo.Collection("tasks");
+Tasks = new Mongo.Collection('tasks');
 
 if (Meteor.isClient) {
   Template.tasks.helpers({
@@ -14,10 +14,7 @@ if (Meteor.isClient) {
     "submit .add-task": function (event){
       let name = event.target.name.value;
 
-      Tasks.insert({
-        name: name,
-        createdAt: new Date()
-      });
+      Meteor.call('addTask', name);
 
       event.target.name.value = '';
 
@@ -25,7 +22,7 @@ if (Meteor.isClient) {
     },
     "click .delete-task": function(event) {
       if(confirm('Delete Task?')) {
-        Tasks.remove(this._id);
+        Meteor.call('deleteTask', this._id);
       }
 
       return false;
@@ -36,3 +33,21 @@ if (Meteor.isClient) {
 if (Meteor.isServer) {
 
 }
+
+Meteor.methods({
+  addTask: function(name) {
+    if(!Meteor.userId()){
+      throw new Meteor.Error('No access!');
+    }
+
+    Tasks.insert({
+      name: name,
+      createdAt: new Date(),
+      userId: Meteor.userId()
+    });
+  },
+
+  deleteTask: function(taskId) {
+    Tasks.remove(taskId);
+  }
+});
